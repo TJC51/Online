@@ -1,0 +1,21 @@
+{
+  "description": "Java 项目自动化钩子",
+  "hooks": [
+    {
+      "event": "PostToolUse",
+      "matcher": "Edit|Write",
+      "filter": "*.java",
+      "description": "编辑 Java 文件后自动编译检查",
+      "command": "bash ${CLAUDE_PROJECT_DIR}/.claude/hooks/scripts/compile-check.sh",
+      "timeout": 30000
+    },
+    {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "filter": "git commit*",
+      "description": "提交前检查编译是否通过",
+      "command": "bash ${CLAUDE_PROJECT_DIR}/.claude/hooks/scripts/compile-check.sh",
+      "timeout": 30000
+    }
+  ]
+}
