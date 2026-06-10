@@ -91,6 +91,12 @@
   >   > * cli：claude --enable-auto-mode
   >   > * VSCode：Settings -> Claude Code -> Allow auto permissions mode
 
+* 作用范围
+
+  > * user：当前用户所有项目，如 全局目录/settings.json
+  > * project：当前项目，如 项目目录/settings.json
+  > * local：当前项目本地专用，如 项目目录/settings.local.json
+
 # 目录&文件
 
 ## 基本概念
@@ -140,7 +146,7 @@
 * Claude.local.md：个人专属（不受 Git 控制）
 
   > 优先级：父目录 Claude.md -> 项目 Claude.md -> 项目 Claude.local.md
-  
+
 * 核心内容模块
 
   > * 常用命令
@@ -185,18 +191,18 @@
   >
   >    > ```json
   >    > {
-  >    >     "hooks": {
-  >    >         "SessionStart": [
-  >    >             {
-  >    >                 "hooks": [
-  >    >                     {
-  >    >                         "type": "command",
-  >    >                         "command": "~/.claude/hooks/HelloWorld.sh"
-  >    >                     }
-  >    >                 ]
-  >    >             }
-  >    >         ]
-  >    >     }
+  >    >  "hooks": {
+  >    >      "SessionStart": [
+  >    >          {
+  >    >              "hooks": [
+  >    >                  {
+  >    >                      "type": "command",
+  >    >                      "command": "~/.claude/hooks/HelloWorld.sh"
+  >    >                  }
+  >    >              ]
+  >    >          }
+  >    >      ]
+  >    >  }
   >    > }
   >    > ```
 
@@ -235,7 +241,7 @@
 
   > * 文件数量上限：20 个（超过的不会被加载）
   >
-  > *  文件长度建议：不超过 200 行
+  > * 文件长度建议：不超过 200 行
   >
   >   > ≤ 200 行：推荐大小，放在 CLAUDE.md 或 rules 中都行
   >   >
@@ -261,7 +267,7 @@
   >
   > ```markdown
   > ---
-  >     paths:
+  >  paths:
   >     - src/main/java/**/*.java
   >     - src/test/**/*.java
   > ---
@@ -371,12 +377,6 @@
   >
   > * --scope XXX：作用范围
   >
-  >   > user：当前用户所有项目（~/.claude/settings.json）
-  >   >
-  >   > project：当前仓库共享（.claude/settings.json）
-  >   >
-  >   > local：本地项目专用（.claude/settings.local.json）
-  >
   > * /plugin update XXX：更新
   >
   > * /plugin uninstall XXX：卸载
@@ -385,16 +385,18 @@
 
 ## Connectors
 
+# MCP
 
-
-## MCP
+## Claude 使用 MCP
 
 * 相关命令
 
   > * claude mcp add：添加一个 MCP 服务器
   >
+  >   > > 推荐使用 npx 下载
+  >   >
   >   > * transport：支持 STDIO、SEE、HTTP，SEE已舍弃
-  >   > * scope：local（个人&当前项目）、project（团队共享&当前项目）、user（个人&所有项目）
+  >   > * scope：local、project、user
   >
   > * claude mcp list：查看所有已配置服务器
   >
@@ -403,6 +405,40 @@
   > * claude mcp remove \<name>：删除服务器
   >
   > * /mcp：在 Claude Code 中查看状态 / 认证
+  >
+  >   > 其他命令无需启动 Claude，而 /mcp 需要启动
+
+## 推荐 MCP
+
+* Chrome DevTools
+
+* @benborla29/mcp-server-mysql
+
+  > * mcp-server-mysql 中专门为 Claude Code 优化的社区分支版本，原作者是 benborla（https://github.com/benborla），由
+  >     benborla29 维护 Claude Code 适配版
+  >
+  > * 四个独特优势
+  >
+  >   > * 专为 Claude Code 优化：原版 mcp-server-mysql 面向通用 MCP 客户端，而 benborla29 的分支针对 Claude Code CLI 做了适配，包括自动启动/停止钩子、会话级别生命周期管理，不会出现 “MCP 服务器残留进程” 的问题
+  >   >
+  >   > * 内置 SSH 隧道：大多数 MySQL MCP 包只能连接本地或同网段的数据库，这个包内置了 SSH 隧道功能，可以直接通过跳板机连接远程生产数据库，不需要手动运行 ssh -L
+  >   >
+  >   > * DDL/写操作精细控制
+  >   >
+  >   >   > * ALLOW_INSERT_OPERATION：是否允许 INSERT 
+  >   >   > * ALLOW_UPDATE_OPERATION：是否允许 UPDATE
+  >   >   > * ALLOW_DELETE_OPERATION：是否允许 DELETE
+  >   >   > * MYSQL_DISABLE_READ_ONLY_TRANSACTIONS：允许 DDL（CREATE TABLE 等）
+  >   >
+  >   > * 多数据库/多项目支持：不设置 MYSQL_DB 就能列出所有数据库，一个 MCP 实例管理多个库。配合 Claude Code 的 project scope 可以给每个项目配不同的数据库连接
+  >
+  > * 提供的工具：连接成功后会提供以下 MCP 工具
+  >
+  >   >   - query：执行 SELECT 查询（只读）
+  >   >   - execute：执行 INSERT/UPDATE/DELETE（需开启对应权限）
+  >   >   - list_tables：列出所有表
+  >   >   - describe_table：查看表结构
+  >   >   - list_databases：列出所有数据库（多库模式下）
 
 # 实际工具
 
